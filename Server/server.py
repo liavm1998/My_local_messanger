@@ -115,15 +115,15 @@ class Server:
     def send_file(self, message):
         """4 (UDP) , downloader name , ip , port , file name , mtu , window"""
         file_name = message[4]
-
         loc = os.path.dirname(os.path.abspath(__file__))
-        loc = loc.split('\\')
-        dir = ''
+        loc = loc.split('/')
+        file_directory = ''
         for i in range(len(loc) - 1):
-            dir += loc[i] + '\\'
-        dir += 'files\\'
+            file_directory += loc[i] + '/'
+        file_directory += 'files/'
         a = 0
-        file = open(dir + file_name, 'rb')
+        file = open(file_directory + file_name, 'rb')
+
         mtu = int(message[5])
         window = int(message[6])
         packets = file_to_packets(file, mtu)
@@ -141,6 +141,7 @@ class Server:
         udp_socket.send(str(self_add).encode())
         acks = []
         size = 0
+        print("seq number before sending")
         for data in packets:
             size += len(data)
             acks.append((size, False))
@@ -148,6 +149,7 @@ class Server:
         acks.sort(key=lambda x: x[0])  # just in case
         # start selective repeat
         window_head = 0
+        size_alert = True
         while window_head + window_reach <= len(packets) or not acks[window_head][1]:
             i = 0
             try:
@@ -206,4 +208,5 @@ if __name__ == '__main__':
     hostname = socket.gethostname()
     local_ip = socket.gethostbyname(hostname)
     print(local_ip)
+    # my_server = Server('10.0.2.4') for amosi linox
     my_server = Server(local_ip)

@@ -2,6 +2,7 @@ import threading
 import tkinter.messagebox
 from functools import partial
 from tkinter import *
+from tkinter import messagebox
 from tkinter.ttk import Combobox
 
 from user.module import *
@@ -25,7 +26,8 @@ class login_menu:
         self.user_name = e.get()
 
         self.module = user_module(address, self.user_name)
-        self.module.connect(('192.168.56.1', 50000), self.user_name)
+        # self.module.connect(('192.168.56.1', 50000), self.user_name)  # windows
+        self.module.connect(('10.0.2.4', 50000), self.user_name)  # for linox!!!
         login.destroy()
 
 
@@ -77,16 +79,17 @@ class refresh_button:
 class MyClientGUI:
 
     def __init__(self, address):
+        self.safe_closing = True
         self.address = address
 
-        login = login_menu(address)
+        login = login_menu(self.address)
+        self.login_window = False
         self.module = login.module
         self.user_name = login.user_name
         self.message = None
         self.target = 'broadcast'
         # main window
         self.window = Tk()
-
         # chat frame
         self.cf = chat_frame(self.window)
         self.cf.pack()
@@ -105,16 +108,20 @@ class MyClientGUI:
         self.rb = refresh_button(window=self.window, command=self.insert_list)
         self.rb.pack()
         # list view
-        self.lv = List_view(window=self.window, module=self.module)
+        self.lv = List_view(window=self.window)
         self.lv.pack()
         # download button
         self.db = Button(master=self.window, text="download", command=self.download)
-        self.db.grid(column=3, row=2)
+        self.db.grid(column=3, row=3)
         # u connected start listening
         t = threading.Thread(target=self.listen)
         t.start()
         # self.listen()
+        self.window.protocol("WM_DELETE_WINDOW", self.on_closing())
         self.window.mainloop()
+        self.window.protocol("WM_DELETE_WINDOW", self.on_closing())
+
+
 
     def download(self):
         if self.cb.get() == "users":
@@ -166,6 +173,12 @@ class MyClientGUI:
             for item in li:
                 self.lv.lb.insert(END, item)
 
+    def on_closing(self):
+        if not self.safe_closing:
+            self.module.exit()
+        else:
+            self.safe_closing = False
+
     # def size_alert(self):
     #     ms = tkinter.messagebox.askyesno(title="download", message="size limit exceded do u wish to continue?")
     #     if ms == 0:
@@ -182,7 +195,7 @@ class MyClientGUI:
 
 
 class List_view:
-    def __init__(self, window: Tk, module: user_module):
+    def __init__(self, window: Tk):
         self.module = user_module
         self.lb = Listbox(window)
 

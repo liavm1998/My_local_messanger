@@ -20,7 +20,7 @@ class login_menu:
         self.user_name = e.get()
 
         self.module = user_module(address, self.user_name)
-        self.module.connect(('192.168.56.1', 50000), self.user_name)
+        self.module.connect(('10.0.2.4', 50000), self.user_name) # for linox!!!
         login.destroy()
 
 

@@ -3,6 +3,7 @@ import socket
 from collections import OrderedDict
 
 from packets import packet
+from packets.packet import MSG_TYPE, RESP_TYPE
 from user import view
 
 
@@ -91,12 +92,8 @@ class user_module:
     def download_file(self, file_name: str):
         udp_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.mtu)
-        hostname = socket.gethostname()
-        local_ip = socket.gethostbyname(hostname)
-
         udp_address = (self.sock.getsockname()[0], 30000)
         udp_socket.bind(udp_address)
-
         pkt = packet.download_req(self.user_name, udp_address, file_name, self.mtu, self.window)
         d = OrderedDict()
         self.sock.send(pkt.encode())
@@ -123,8 +120,13 @@ class user_module:
             ack = size
             d[ack] = data
             udp_socket.send(str(ack).encode())
-        file = open("udp_transferred"+file_name, 'wb')
+        file = open("udp_transferred_"+file_name, 'wb')
         for item in d.items():
             file.write(item[1])
         file.close()
         udp_socket.close()
+
+    def exit(self):
+        self.sock.send("|exit|".encode())
+
+
