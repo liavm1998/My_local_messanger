@@ -3,7 +3,6 @@ import socket
 from collections import OrderedDict
 
 from packets import packet
-from packets.packet import MSG_TYPE, RESP_TYPE
 from user import view
 
 
@@ -95,8 +94,9 @@ class user_module:
         hostname = socket.gethostname()
         local_ip = socket.gethostbyname(hostname)
 
-        udp_address = (local_ip, 30000)
+        udp_address = (self.sock.getsockname()[0], 30000)
         udp_socket.bind(udp_address)
+
         pkt = packet.download_req(self.user_name, udp_address, file_name, self.mtu, self.window)
         d = OrderedDict()
         self.sock.send(pkt.encode())
@@ -128,6 +128,3 @@ class user_module:
             file.write(item[1])
         file.close()
         udp_socket.close()
-
-
-
