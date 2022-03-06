@@ -3,9 +3,7 @@ from user.view import *
 
 
 def u1():
-    hostname = socket.gethostname()
-    local_ip = socket.gethostbyname(hostname)
-    MyClientGUI((local_ip, 50001))
+    MyClientGUI(('', 50001))
 
 
 # def u2():
